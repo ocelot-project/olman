@@ -1,7 +1,7 @@
-extern crate libc;
+use libc;
 #[macro_use]
 extern crate lazy_static;
-extern crate num_traits;
+
 #[macro_use]
 extern crate num_derive;
 
@@ -126,7 +126,7 @@ impl UTMPXFile {
         self.state = UTMPXState::Beginning;
     }
 
-    pub fn iter(&mut self) -> UTMPXIterator {
+    pub fn iter(&mut self) -> UTMPXIterator<'_> {
         UTMPXIterator::new(self)
     }
 
