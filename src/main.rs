@@ -1,17 +1,17 @@
 #[macro_use]
 extern crate lazy_static;
-extern crate users;
-extern crate getopts;
-extern crate nix;
-extern crate utmpx;
-extern crate libc;
+use users;
+use getopts;
+use nix;
+
+use libc;
 #[macro_use]
 extern crate slog;
-extern crate slog_syslog;
-extern crate regex;
-extern crate pam_sys;
-extern crate pwd;
-extern crate toml;
+use slog_syslog;
+
+
+use pwd;
+use toml;
 #[macro_use]
 extern crate serde_derive;
 
