@@ -1,7 +1,7 @@
 use ::pam_sys;
 use ::pam_sys::{PamReturnCode, PamItemType};
 pub use ::pam_sys::{PamMessage, PamMessageStyle, PamResponse};
-use ::{OlmanError, PROG_NAME, AUTH_STORE};
+use crate::{OlmanError, PROG_NAME, AUTH_STORE};
 use std::ffi::{CString, CStr};
 use std::collections::HashMap;
 

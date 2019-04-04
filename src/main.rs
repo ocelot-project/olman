@@ -21,7 +21,7 @@ mod pam;
 mod fperms;
 mod config;
 
-use OlmanError::*;
+use crate::OlmanError::*;
 use nix::unistd::{isatty, setuid, setgid, initgroups, Uid, Gid, Pid};
 use std::os::unix::io::AsRawFd;
 use utmpx::{UTMPXEntry, UTMPXType, SYSTEM_UTMPX};
@@ -32,10 +32,10 @@ use std::process::Command;
 use std::os::unix::process::CommandExt;
 use std::error::Error;
 use std::sync::Mutex;
-use credentials::Credentials;
+use crate::credentials::Credentials;
 use regex::Regex;
-use pam::{PamSession, PamStringItem, AuthStatus};
-use config::Config;
+use crate::pam::{PamSession, PamStringItem, AuthStatus};
+use crate::config::Config;
 
 #[derive(Debug)]
 pub enum OlmanError {

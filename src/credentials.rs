@@ -19,15 +19,15 @@ impl Credentials {
         self.session = 0;
     }
 
-    pub fn with_credentials<F>(&mut self, closure: F) -> Result<(), ::OlmanError>
-    where F: FnOnce(&str, &str, u16) -> Result<(), ::OlmanError> {
+    pub fn with_credentials<F>(&mut self, closure: F) -> Result<(), crate::OlmanError>
+    where F: FnOnce(&str, &str, u16) -> Result<(), crate::OlmanError> {
         let ret = closure(&self.username, &self.password, self.session);
         self.erase();
         ret
     }
 
-    pub fn set_credentials<F>(&mut self, closure: F) -> Result<(), ::OlmanError>
-    where F: FnOnce() -> Result<(String, String, u16), ::OlmanError> {
+    pub fn set_credentials<F>(&mut self, closure: F) -> Result<(), crate::OlmanError>
+    where F: FnOnce() -> Result<(String, String, u16), crate::OlmanError> {
         match closure() {
             Ok((u, p, s)) => {
                 self.username = u;
