@@ -5,12 +5,12 @@ extern crate lazy_static;
 #[macro_use]
 extern crate num_derive;
 
-use libc::{utmpx, getutxent, pututxline, setutxent, endutxent};
-use std::marker::PhantomData;
-use std::cell::Cell;
-use std::sync::Mutex;
-use std::ffi::CStr;
+use libc::{endutxent, getutxent, pututxline, setutxent, utmpx};
 use num_traits::cast::FromPrimitive;
+use std::cell::Cell;
+use std::ffi::CStr;
+use std::marker::PhantomData;
+use std::sync::Mutex;
 
 // TODO: work around MT-Unsafe sig:ALRM timer
 
@@ -26,19 +26,18 @@ pub enum UTMPXType {
     UserProcess = 7,
     DeadProcess = 8,
     Accounting = 9,
-    Unknown
+    Unknown,
 }
 
 #[derive(PartialEq)]
 pub enum UTMPXState {
     Beginning,
     Middle,
-    End
+    End,
 }
 
 lazy_static! {
-    pub static ref SYSTEM_UTMPX: Mutex<UTMPXFile> =
-        Mutex::new(UTMPXFile::new());
+    pub static ref SYSTEM_UTMPX: Mutex<UTMPXFile> = Mutex::new(UTMPXFile::new());
 }
 
 // UTMPXEntry and to_str implementations thanks to nix UtsName
@@ -56,40 +55,34 @@ impl UTMPXEntry {
     }
 
     pub fn line(&self) -> &str {
-        to_str(&(&self.0.ut_line as *const libc::c_char )
-               as *const *const libc::c_char)
+        to_str(&(&self.0.ut_line as *const libc::c_char) as *const *const libc::c_char)
     }
 
     pub fn id(&self) -> &str {
-        to_str(&(&self.0.ut_id as *const libc::c_char )
-               as *const *const libc::c_char)
+        to_str(&(&self.0.ut_id as *const libc::c_char) as *const *const libc::c_char)
     }
 
     pub fn user(&self) -> &str {
-        to_str(&(&self.0.ut_user as *const libc::c_char )
-               as *const *const libc::c_char)
+        to_str(&(&self.0.ut_user as *const libc::c_char) as *const *const libc::c_char)
     }
 
     pub fn host(&self) -> &str {
-        to_str(&(&self.0.ut_host as *const libc::c_char )
-               as *const *const libc::c_char)
+        to_str(&(&self.0.ut_host as *const libc::c_char) as *const *const libc::c_char)
     }
 
     pub fn exit_status(&self) -> (libc::c_short, libc::c_short) {
-        (self.0.ut_exit.e_termination,
-         self.0.ut_exit.e_exit)
+        (self.0.ut_exit.e_termination, self.0.ut_exit.e_exit)
     }
 
-    pub fn session(&self) -> libc::int32_t {
+    pub fn session(&self) -> i32 {
         self.0.ut_session
     }
 
-    pub fn time(&self) -> (libc::int32_t, libc::int32_t) {
-        (self.0.ut_tv.tv_sec,
-         self.0.ut_tv.tv_usec)
+    pub fn time(&self) -> (i32, i32) {
+        (self.0.ut_tv.tv_sec, self.0.ut_tv.tv_usec)
     }
 
-    pub fn ipv6_addr(&self) -> &[libc::int32_t] {
+    pub fn ipv6_addr(&self) -> &[i32] {
         &self.0.ut_addr_v6[..]
     }
 }
@@ -104,14 +97,14 @@ fn to_str<'a>(s: *const *const libc::c_char) -> &'a str {
 
 pub struct UTMPXFile {
     pub state: UTMPXState,
-    _token: PhantomData<Cell<()>> // MT-Unsafe race:utent race:utentbuf
+    _token: PhantomData<Cell<()>>, // MT-Unsafe race:utent race:utentbuf
 }
 
 impl UTMPXFile {
     fn new() -> Self {
         let mut n = Self {
             state: UTMPXState::Beginning,
-            _token: PhantomData
+            _token: PhantomData,
         };
 
         n.reset();
@@ -133,16 +126,13 @@ impl UTMPXFile {
     pub fn write_entry(&mut self, entry: UTMPXEntry) -> Result<(), ()> {
         self.reset();
 
-        let res = unsafe {
-            pututxline(&entry.0)
-        };
+        let res = unsafe { pututxline(&entry.0) };
 
         self.state = UTMPXState::Middle;
 
         if res.is_null() {
             Err(())
-        }
-        else {
+        } else {
             Ok(())
         }
     }
@@ -157,7 +147,7 @@ impl Drop for UTMPXFile {
 }
 
 pub struct UTMPXIterator<'a> {
-    obj: &'a mut UTMPXFile
+    obj: &'a mut UTMPXFile,
 }
 
 impl<'a> UTMPXIterator<'a> {
@@ -166,9 +156,7 @@ impl<'a> UTMPXIterator<'a> {
             obj.reset();
         }
 
-        Self {
-            obj: obj
-        }
+        Self { obj }
     }
 }
 
@@ -181,8 +169,7 @@ impl<'a> Iterator for UTMPXIterator<'a> {
             if utxent.is_null() {
                 self.obj.state = UTMPXState::End;
                 None
-            }
-            else {
+            } else {
                 self.obj.state = UTMPXState::Middle;
                 Some(UTMPXEntry(*utxent.clone()))
             }
