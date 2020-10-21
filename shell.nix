@@ -1,5 +1,9 @@
 { pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
-  buildInputs = with pkgs; [ pam ];
+  buildInputs = with pkgs; [
+    rustc
+    cargo
+    pam
+  ];
 }
